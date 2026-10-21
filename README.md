@@ -19,6 +19,13 @@ cmake -B build -DGGML_NATIVE=OFF -DGGML_OPENMP=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=
 cmake --build build --config Release
 ```
 
+The two extra flags are only there so the .exe runs on other Windows machines without first installing the Visual C++ Redistributable:
+
+	•	CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded puts the C++ runtime inside the .exe.
+	•	GGML_OPENMP=OFF drops Microsoft's OpenMP DLL; whisper.cpp uses its own threading instead.
+
+
+
 ## Get a model
 
 ```bash
