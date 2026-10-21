@@ -13,6 +13,12 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release          # add -DGGML_CUDA=ON for NVID
 cmake --build build -j
 ```
 
+#For Windows build as below 
+```bash
+cmake -B build -DGGML_NATIVE=OFF -DGGML_OPENMP=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+cmake --build build --config Release
+```
+
 ## Get a model
 
 ```bash
