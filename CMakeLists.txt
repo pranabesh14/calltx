@@ -44,3 +44,7 @@ target_link_libraries(calltx PRIVATE whisper)
 if(UNIX AND NOT APPLE)
   target_link_libraries(calltx PRIVATE pthread m dl)
 endif()
+
+enable_testing()
+add_test(NAME calltx_help COMMAND calltx -h)
+set_tests_properties(calltx_help PROPERTIES PASS_REGULAR_EXPRESSION "Usage: calltx")
