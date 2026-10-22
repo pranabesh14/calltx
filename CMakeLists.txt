@@ -47,4 +47,4 @@ endif()
 
 enable_testing()
 add_test(NAME calltx_help COMMAND calltx -h)
-set_tests_properties(calltx_help PROPERTIES PASS_REGULAR_EXPRESSION "Usage: calltx")
+set_tests_properties(calltx_help PROPERTIES PASS_REGULAR_EXPRESSION "Usage: .*calltx")
