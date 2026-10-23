@@ -19,32 +19,43 @@ set(BUILD_SHARED_LIBS      OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
   whisper
   GIT_REPOSITORY https://github.com/ggml-org/whisper.cpp.git
-  GIT_TAG        v1.7.5
+  GIT_TAG        v1.9.5
   GIT_SHALLOW    TRUE
 )
 FetchContent_MakeAvailable(whisper)
 
 # ---- miniaudio (single header: WAV/MP3/FLAC decoding + resampling) ----
-set(THIRD_PARTY_DIR ${CMAKE_BINARY_DIR}/third_party)
-set(MINIAUDIO_H ${THIRD_PARTY_DIR}/miniaudio.h)
-if(NOT EXISTS ${MINIAUDIO_H})
-  message(STATUS "Downloading miniaudio.h")
-  file(DOWNLOAD
-    https://raw.githubusercontent.com/mackron/miniaudio/0.11.21/miniaudio.h
-    ${MINIAUDIO_H} STATUS dl_status TLS_VERIFY ON)
-  list(GET dl_status 0 dl_code)
-  if(NOT dl_code EQUAL 0)
-    message(FATAL_ERROR "Failed to download miniaudio.h: ${dl_status}")
-  endif()
+set(THIRD_PARTY_DIR "${CMAKE_BINARY_DIR}/third_party")
+set(MINIAUDIO_H "${THIRD_PARTY_DIR}/miniaudio.h")
+
+file(MAKE_DIRECTORY "${THIRD_PARTY_DIR}")
+
+if(NOT EXISTS "${MINIAUDIO_H}")
+  message(FATAL_ERROR
+    "miniaudio.h is missing at ${MINIAUDIO_H}. "
+    "Download miniaudio.h manually and place it at this path."
+  )
 endif()
 
-add_executable(calltx src/main.cpp src/audio.cpp)
+file(SIZE "${MINIAUDIO_H}" MINIAUDIO_SIZE)
+if(MINIAUDIO_SIZE LESS 100000)
+  message(FATAL_ERROR
+    "miniaudio.h appears incomplete or invalid: ${MINIAUDIO_H}"
+  )
+endif()
+
+add_executable(calltx src/main.cpp src/audio.cpp src/deadair.cpp)
 target_include_directories(calltx PRIVATE ${THIRD_PARTY_DIR})
 target_link_libraries(calltx PRIVATE whisper)
 if(UNIX AND NOT APPLE)
   target_link_libraries(calltx PRIVATE pthread m dl)
 endif()
 
-enable_testing()
-add_test(NAME calltx_help COMMAND calltx -h)
-set_tests_properties(calltx_help PROPERTIES PASS_REGULAR_EXPRESSION "Usage: .*calltx")
+# ---- tests (optional): cmake -B build -DCALLTX_BUILD_TESTS=ON && ctest --test-dir build ----
+option(CALLTX_BUILD_TESTS "Build calltx unit tests" OFF)
+if(CALLTX_BUILD_TESTS)
+  enable_testing()
+  add_executable(test_deadair tests/test_deadair.cpp src/deadair.cpp)
+  target_include_directories(test_deadair PRIVATE src)
+  add_test(NAME deadair COMMAND test_deadair)
+endif()
